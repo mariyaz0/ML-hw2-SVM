@@ -4,7 +4,6 @@ Dataset simulation for HW2 (Question 1, also reused in Q2-Q6).
 Both generators work for any number of input dimensions (dim=2 by default),
 so Question 6 (high dimensionality) can reuse them directly.
 
-Labels are 0/1. Use `labels_pm1(y)` if a model needs -1/+1.
 """
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -64,11 +63,6 @@ def split(X, y, test_size=TEST_SIZE, seed=SEED):
     """Shared train/test split (stratified) - use this everywhere."""
     return train_test_split(X, y, test_size=test_size,
                             random_state=seed, stratify=y)
-
-
-def labels_pm1(y):
-    """Convert 0/1 labels to -1/+1."""
-    return np.where(y == 1, 1, -1)
 
 
 def _shuffle(X, y, rng):
