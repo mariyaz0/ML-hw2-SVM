@@ -17,11 +17,14 @@ NOISE_LEVELS = [0.0, 0.15, 0.25, 0.50]
 rng = np.random.default_rng(SEED)
 
 def shuffle_labels(y, fraction, rng):
-    """Randomly permute labels for the selected fraction of training rows."""
+    """Randomly flip a fraction of the training labels."""
     y_noisy = y.copy()
     n = int(round(fraction * len(y)))
-    idx = rng.choice(len(y), size=n, replace=False)
-    y_noisy[idx] = rng.permutation(y_noisy[idx])
+
+    if n > 0:
+        idx = rng.choice(len(y), size=n, replace=False)
+        y_noisy[idx] = 1 - y_noisy[idx]
+
     return y_noisy
 
 datasets = {"Linear": make_linear(), "Circular": make_circular()}
@@ -31,8 +34,24 @@ for dataset_name, (X, y) in datasets.items():
     results[dataset_name] = {}
     for fraction in NOISE_LEVELS:
         y_train_noisy = shuffle_labels(y_train, fraction, rng)
+
+        print(
+            f"\n{dataset_name} | Noise: {fraction:.0%} | "
+            f"Actual labels changed: "
+            f"{np.mean(y_train_noisy != y_train):.2%}"
+        )
+
         model = make_best_svm()
         model.fit(X_train, y_train_noisy)
+
+        print(
+            "Training accuracy against noisy labels:",
+            model.score(X_train, y_train_noisy))
+
+        print(
+            "Training accuracy against original labels:",
+            model.score(X_train, y_train))
+
         scores = evaluate(model, X_test, y_test)
         results[dataset_name][fraction] = scores
         print_scores(f"{dataset_name}, {fraction:.0%} labels shuffled", scores)

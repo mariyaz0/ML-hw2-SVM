@@ -14,13 +14,15 @@ from utils import evaluate, print_scores, save_fig
 
 DIMS = [2, 5, 10, 15]
 NOISE_LEVELS = [0.0, 0.15, 0.25, 0.50]
-rng = np.random.default_rng(SEED)
 
 def shuffle_labels(y, fraction, rng):
     y_noisy = y.copy()
     n = int(round(fraction * len(y)))
-    idx = rng.choice(len(y), size=n, replace=False)
-    y_noisy[idx] = rng.permutation(y_noisy[idx])
+
+    if n > 0:
+        idx = rng.choice(len(y), size=n, replace=False)
+        y_noisy[idx] = 1 - y_noisy[idx]
+
     return y_noisy
 
 generators = {"Linear": make_linear, "Circular": make_circular}
@@ -31,6 +33,11 @@ for dataset_name, generator in generators.items():
         X, y = generator(dim=dim)
         X_train, X_test, y_train, y_test = split(X, y)
         for fraction in NOISE_LEVELS:
+            rng = np.random.default_rng(
+            SEED + dim * 1000
+            + int(fraction * 100) * 10
+            + (0 if dataset_name == "Linear" else 1)
+        )
             y_train_noisy = shuffle_labels(y_train, fraction, rng)
             model = make_best_svm()
             model.fit(X_train, y_train_noisy)
