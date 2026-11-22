@@ -44,7 +44,7 @@ def make_augmented_evaluation_set(X_source, y_source, noise_sd, k=K):
 
 results = {}
 for label, sd in [("Low noise", LOW_SD), ("High noise", HIGH_SD)]:
-    X_aug, y_aug = make_augmented_evaluation_set(X_train, y_train, sd)
+    X_aug, y_aug = make_augmented_evaluation_set(X_test, y_test, sd)
     scores = evaluate(model, X_aug, y_aug)
     results[label] = scores
     print_scores(label, scores)
@@ -52,9 +52,9 @@ for label, sd in [("Low noise", LOW_SD), ("High noise", HIGH_SD)]:
 # Visualize one representative batch at each noise level.
 fig, axes = plt.subplots(1, 2, figsize=(10, 4.5))
 for ax, (label, sd) in zip(axes, [("Low noise", LOW_SD), ("High noise", HIGH_SD)]):
-    idx = rng.choice(len(X_train), size=SAMPLE_SIZE, replace=True)
-    X_batch = X_train[idx] + rng.normal(0.0, sd, X_train[idx].shape)
-    plot_dataset(X_batch, y_train[idx], ax=ax, s=5, alpha=0.35,
+    idx = rng.choice(len(X_test), size=SAMPLE_SIZE, replace=True)
+    X_batch = X_test[idx] + rng.normal(0.0, sd, X_test[idx].shape)
+    plot_dataset(X_batch, y_test[idx], ax=ax, s=5, alpha=0.35,
                  title=f"{label} (SD={sd})")
 fig.tight_layout()
 save_fig(fig, "q4_augmented_samples")
@@ -81,7 +81,7 @@ save_fig(fig, "q4_augmentation_metrics")
 # Bonus
 bonus_accuracy = []
 for sd in BONUS_SDS:
-    X_aug, y_aug = make_augmented_evaluation_set(X_train, y_train, sd, k=50)
+    X_aug, y_aug = make_augmented_evaluation_set(X_test, y_test, sd, k=50)
     bonus_accuracy.append(evaluate(model, X_aug, y_aug)["accuracy"])
 below = [sd for sd, acc in zip(BONUS_SDS, bonus_accuracy) if acc < THRESHOLD]
 crossing = below[0] if below else None
